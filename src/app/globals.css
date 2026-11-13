@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens, taken from the Figma file (Cyces-SM > "DataOps Black Vertion").
+ * Use them as Tailwind classes: bg-ink, bg-surface, text-brand, bg-mist, font-sans.
+ */
+@theme {
+  --color-ink: #0a0a0a; /* page black */
+  --color-surface: #141414; /* cards on black */
+  --color-brand: #ff0000; /* Cyces red */
+  --color-mist: #f5f5f5; /* cards on white */
+
+  --font-sans: var(--font-glacial), ui-sans-serif, system-ui, sans-serif;
+
+  /* Hero night-shift chart: each bar grows up from the baseline once. Delays are set per bar. */
+  --animate-tick-grow: tick-grow 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes tick-grow {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+}
+
+/*
+ * "short:" = desktop layout on a short screen (e.g. 1366x768 laptops, browser chrome included).
+ * Used to tighten the hero so it still fits in one screen.
+ */
+@custom-variant short {
+  @media (min-width: 64rem) and (max-height: 820px) {
+    @slot;
+  }
+}
+
+/* "tight:" = desktop layout on a very short screen (e.g. 1280x720). Stacks on top of short:. */
+@custom-variant tight {
+  @media (min-width: 64rem) and (max-height: 660px) {
+    @slot;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink font-sans text-white antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-4 outline-brand;
+  }
+}
+
+/*
+ * Arrow-slide button (Figma: "Button / Book a review, hover arrow slides").
+ * On hover the arrow badge slides from the right edge to the left edge and the label slides right,
+ * so the button keeps its width. Sizes come from four CSS variables set on the button:
+ *   --pl     label padding on the open side
+ *   --inset  gap between the badge and the button edge
+ *   --badge  badge diameter
+ *   --gap    space between label and badge
+ */
+@layer components {
+  .btn-slide {
+    position: relative;
+    min-height: calc(var(--badge) + var(--inset) * 2);
+    padding-left: var(--pl);
+    padding-right: calc(var(--inset) + var(--badge) + var(--gap));
+  }
+
+  .btn-slide-label,
+  .btn-slide-badge {
+    transition-duration: 450ms;
+    transition-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .btn-slide-label {
+    transition-property: transform;
+  }
+
+  .btn-slide-badge {
+    position: absolute;
+    top: 50%;
+    left: calc(100% - var(--inset) - var(--badge));
+    width: var(--badge);
+    height: var(--badge);
+    transform: translateY(-50%);
+    transition-property: left;
+  }
+
+  /* Only on devices that really hover, so a tap on a phone doesn't leave the button stuck mid-state. */
+  @media (hover: hover) {
+    .btn-slide:hover .btn-slide-label {
+      transform: translateX(calc(var(--inset) + var(--badge) + var(--gap) - var(--pl)));
+    }
+    .btn-slide:hover .btn-slide-badge {
+      left: var(--inset);
+    }
+  }
+
+  .btn-slide:focus-visible .btn-slide-label {
+    transform: translateX(calc(var(--inset) + var(--badge) + var(--gap) - var(--pl)));
+  }
+  .btn-slide:focus-visible .btn-slide-badge {
+    left: var(--inset);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .btn-slide-label,
+  .btn-slide-badge {
+    transition: none;
+  }
+}
